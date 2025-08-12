@@ -1,6 +1,6 @@
 // by R. Malope, T. Coutts, K. Lesese, H. Chagaluka, 2025
 
-// This is a program for developing a parser for Modula-2 declarations
+// This is a program develops a parser for Modula-2 declarations
 // Modification of an original program written by P.D. Terry, Rhodes University, Modified by KL Bradshaw 2022
 
 import java.util.*;
@@ -17,7 +17,7 @@ class Token {
 
 } // Token
 
-class Mod2decl {
+class Mod2decl1 {
 
   // +++++++++++++++++++++++++ File Handling and Error handlers
   // ++++++++++++++++++++
@@ -50,8 +50,28 @@ class Mod2decl {
   // +++++++++++++++++++++++ token kinds enumeration +++++++++++++++++++++++++
 
   static final int noSym = 0,
-      EOFSym = 1;
-
+      EOFSym = 1,
+      identifierSym = 2,
+      numberSym = 3,
+      typeSym = 4,
+      varSym = 5,
+      arraySym = 6,
+      recordSym = 7,
+      endSym = 8,
+      setSym = 9,
+      ofSym = 10,
+      pointerSym = 11,
+      toSym = 12,
+      equalsSym = 13,
+      commaSym = 14,
+      semicolonSym = 15,
+      colonSym = 16,
+      dotSym = 17,
+      leftBracketSym = 18,
+      rightBracketSym = 19,
+      leftParenSym = 20,
+      rightParenSym = 21,
+      starSym = 22;
   // and others like this
 
   // +++++++++++++++++++++++++++++ Character Handler ++++++++++++++++++++++++++
@@ -91,7 +111,145 @@ class Mod2decl {
     StringBuilder symLex = new StringBuilder();
     int symKind = noSym;
 
-    // over to you!
+    if (ch == EOF) {
+      symKind = EOFSym;
+    }
+    // Handle identifiers and keywords
+    else if (Character.isLetter(ch)) {
+      while (Character.isLetterOrDigit(ch)) {
+        symLex.append(ch);
+        getChar();
+      }
+      String ident = symLex.toString();
+      // Check for keywords
+      switch (ident) {
+        case "TYPE":
+          symKind = typeSym;
+          break;
+        case "VAR":
+          symKind = varSym;
+          break;
+        case "ARRAY":
+          symKind = arraySym;
+          break;
+        case "RECORD":
+          symKind = recordSym;
+          break;
+        case "END":
+          symKind = endSym;
+          break;
+        case "SET":
+          symKind = setSym;
+          break;
+        case "OF":
+          symKind = ofSym;
+          break;
+        case "POINTER":
+          symKind = pointerSym;
+          break;
+        case "TO":
+          symKind = toSym;
+          break;
+        default:
+          symKind = identifierSym;
+          break;
+      }
+    }
+    // Handle numbers
+    else if (Character.isDigit(ch)) {
+      while (Character.isDigit(ch)) {
+        symLex.append(ch);
+        getChar();
+      }
+      symKind = numberSym;
+    }
+
+    // Handle comments
+    else if (ch == '(') {
+      getChar();
+      if (ch == '*') {
+        // It's a comment, skip until *)
+        getChar();
+        while (true) {
+          if (ch == '*') {
+            getChar();
+            if (ch == ')') {
+              getChar();
+              break;
+            }
+          } else if (ch == EOF) {
+            abort("Unterminated comment");
+          } else {
+            getChar();
+          }
+        }
+        // Recursively call getSym to get next token after comment
+        getSym();
+        return;
+      } else {
+        // It's just a '(' symbol
+        symLex.append('(');
+        symKind = leftParenSym;
+        getChar();
+      }
+    }
+    // Handle other symbols
+    else {
+      switch (ch) {
+        case '=':
+          symKind = equalsSym;
+          symLex.append(ch);
+          getChar();
+          break;
+        case ',':
+          symKind = commaSym;
+          symLex.append(ch);
+          getChar();
+          break;
+        case ';':
+          symKind = semicolonSym;
+          symLex.append(ch);
+          getChar();
+          break;
+        case ':':
+          symKind = colonSym;
+          symLex.append(ch);
+          getChar();
+          break;
+        case '.':
+          symKind = dotSym;
+          symLex.append(ch);
+          getChar();
+          break;
+        case '[':
+          symKind = leftBracketSym;
+          symLex.append(ch);
+          getChar();
+          break;
+        case ']':
+          symKind = rightBracketSym;
+          symLex.append(ch);
+          getChar();
+          break;
+        case '(':
+          symKind = leftParenSym;
+          symLex.append(ch);
+          getChar();
+          break;
+        case ')':
+          symKind = rightParenSym;
+          symLex.append(ch);
+          getChar();
+          break;
+        case '*':
+          symKind = starSym;
+          symLex.append(ch);
+          getChar();
+          break;
+        default:
+          abort("Invalid character '" + ch + "'");
+      }
+    }
 
     sym = new Token(symKind, symLex.toString());
   } // getSym
