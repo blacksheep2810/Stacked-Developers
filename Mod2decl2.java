@@ -1,6 +1,6 @@
 // by R. Malope, T. Coutts, K. Lesese, H. Chagaluka, 2025
 
-// This is a program develops a parser for Modula-2 declarations
+// This is a program that develops a parser for Modula-2 declarations
 // Modification of an original program written by P.D. Terry, Rhodes University, Modified by KL Bradshaw 2022
 
 import java.util.*;
@@ -61,7 +61,6 @@ class Mod2decl2 {
             leftParenSym = 20,
             rightParenSym = 21,
             starSym = 22;
-    // and others like this
 
     // +++++++++++++++++++++++++++++ Character Handler ++++++++++++++++++++++++++
 
@@ -87,9 +86,6 @@ class Mod2decl2 {
     } // getChar
 
     // +++++++++++++++++++++++++++++++ Scanner ++++++++++++++++++++++++++++++++++
-
-    // Declaring sym as a global variable is done for expediency - global variables
-    // are not always a good thing
 
     static Token sym;
 
@@ -295,7 +291,7 @@ class Mod2decl2 {
         output.close();
     } // main
 
-} // Mod2decl1
+} // Mod2decl2
 
 class Token {
     public int kind;
