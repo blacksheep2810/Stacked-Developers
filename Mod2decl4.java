@@ -61,9 +61,8 @@ class Mod2decl4 {
             leftParenSym = 20,
             rightParenSym = 21,
             starSym = 22;
-           
+
     static final int simpleTypeFirst = identifierSym;
-    
 
     // +++++++++++++++++++++++++++++ Character Handler ++++++++++++++++++++++++++
 
@@ -245,212 +244,205 @@ class Mod2decl4 {
         sym = new Token(symKind, symLex.toString());
     } // getSym
 
-
     // +++++++++++++++++++++++++++++++ Parser +++++++++++++++++++++++++++++++++++
 
-     // Add these methods to your Mod2decl2 class, after the scanner methods
+    // Add these methods to your Mod2decl2 class, after the scanner methods
 
-// Utility methods for error handling
-static void accept(int wantedSym, String errorMessage) {
-    if (sym.kind == wantedSym) 
-        getSym(); 
-    else 
-        abort(errorMessage);
-}
-
-static void accept(IntSet allowedSet, String errorMessage) {
-    if (allowedSet.contains(sym.kind)) 
-        getSym(); 
-    else 
-        abort(errorMessage);
-}
-
-// Parser methods for each non-terminal
-static void Mod2Decl() {
-    // Mod2Decl = { Declaration } .
-    while (sym.kind == typeSym || sym.kind == varSym) {
-        Declaration();
+    // Utility methods for error handling
+    static void accept(int wantedSym, String errorMessage) {
+        if (sym.kind == wantedSym)
+            getSym();
+        else
+            abort(errorMessage);
     }
-    accept(EOFSym, "EOF expected");
-}
 
-static void Declaration() {
-    // Declaration = "TYPE" { TypeDecl SYNC ";" } | "VAR" { VarDecl SYNC ";" } .
-    if (sym.kind == typeSym) {
-        getSym();
-        while (sym.kind == identifierSym) {
-            TypeDecl();
-            accept(semicolonSym, "; expected");
+    static void accept(IntSet allowedSet, String errorMessage) {
+        if (allowedSet.contains(sym.kind))
+            getSym();
+        else
+            abort(errorMessage);
+    }
+
+    // Parser methods for each non-terminal
+    static void Mod2Decl() {
+        // Mod2Decl = { Declaration } .
+        while (sym.kind == typeSym || sym.kind == varSym) {
+            Declaration();
         }
-    } 
-    else if (sym.kind == varSym) {
-        getSym();
-        while (sym.kind == identifierSym) {
-            VarDecl();
-            accept(semicolonSym, "; expected");
-        }
+        accept(EOFSym, "EOF expected");
     }
-    else {
-        abort("TYPE or VAR expected");
-    }
-}
 
-static void TypeDecl() {
-    // TypeDecl = identifier "=" Type .
-    accept(identifierSym, "identifier expected");
-    accept(equalsSym, "= expected");
-    Type();
-}
-
-static void VarDecl() {
-    // VarDecl = IdentList ":" Type .
-    IdentList();
-    accept(colonSym, ": expected");
-    Type();
-}
-
-static void Type() {
-    // Type = SimpleType | ArrayType | RecordType | SetType | PointerType .
-    IntSet typeStarts = new IntSet(simpleTypeFirst, arraySym, recordSym, setSym, pointerSym);
-    accept(typeStarts, "type expected");
-    
-    switch (sym.kind) {
-        case identifierSym:
-        case leftParenSym:
-        case leftBracketSym:
-            SimpleType();
-            break;
-        case arraySym:
-            ArrayType();
-            break;
-        case recordSym:
-            RecordType();
-            break;
-        case setSym:
-            SetType();
-            break;
-        case pointerSym:
-            PointerType();
-            break;
-        default:
-            abort("invalid type");
-    }
-}
-
-static void SimpleType() {
-    // SimpleType = QualIdent [ Subrange ] | Enumeration | Subrange .
-    if (sym.kind == leftParenSym) {
-        Enumeration();
-    } 
-    else if (sym.kind == leftBracketSym) {
-        Subrange();
-    } 
-    else {
-        QualIdent();
-        if (sym.kind == leftBracketSym) {
-            Subrange();
+    static void Declaration() {
+        // Declaration = "TYPE" { TypeDecl SYNC ";" } | "VAR" { VarDecl SYNC ";" } .
+        if (sym.kind == typeSym) {
+            getSym();
+            while (sym.kind == identifierSym) {
+                TypeDecl();
+                accept(semicolonSym, "; expected");
+            }
+        } else if (sym.kind == varSym) {
+            getSym();
+            while (sym.kind == identifierSym) {
+                VarDecl();
+                accept(semicolonSym, "; expected");
+            }
+        } else {
+            abort("TYPE or VAR expected");
         }
     }
-}
 
-static void QualIdent() {
-    // QualIdent = identifier { "." identifier } .
-    accept(identifierSym, "identifier expected");
-    while (sym.kind == dotSym) {
-        getSym();
+    static void TypeDecl() {
+        // TypeDecl = identifier "=" Type .
         accept(identifierSym, "identifier expected");
+        accept(equalsSym, "= expected");
+        Type();
     }
-}
 
-static void Subrange() {
-    // Subrange = "[" Constant ".." Constant "]" .
-    accept(leftBracketSym, "[ expected");
-    Constant();
-    accept(equalsSym, ".. expected"); // Note: Using equalsSym for ".." in this grammar
-    Constant();
-    accept(rightBracketSym, "] expected");
-}
-
-static void Constant() {
-    // Constant = number | identifier .
-    if (sym.kind == numberSym) {
-        getSym();
-    } 
-    else if (sym.kind == identifierSym) {
-        getSym();
-    } 
-    else {
-        abort("number or identifier expected");
-    }
-}
-
-static void Enumeration() {
-    // Enumeration = "(" IdentList ")" .
-    accept(leftParenSym, "( expected");
-    IdentList();
-    accept(rightParenSym, ") expected");
-}
-
-static void IdentList() {
-    // IdentList = identifier { "," identifier } .
-    accept(identifierSym, "identifier expected");
-    while (sym.kind == commaSym) {
-        getSym();
-        accept(identifierSym, "identifier expected");
-    }
-}
-
-static void ArrayType() {
-    // ArrayType = "ARRAY" SimpleType { "," SimpleType } "OF" Type.
-    accept(arraySym, "ARRAY expected");
-    SimpleType();
-    while (sym.kind == commaSym) {
-        getSym();
-        SimpleType();
-    }
-    accept(ofSym, "OF expected");
-    Type();
-}
-
-static void RecordType() {
-    // RecordType = "RECORD" FieldLists "END" .
-    accept(recordSym, "RECORD expected");
-    FieldLists();
-    accept(endSym, "END expected");
-}
-
-static void FieldLists() {
-    // FieldLists = FieldList { ";" FieldList } .
-    FieldList();
-    while (sym.kind == semicolonSym) {
-        getSym();
-        FieldList();
-    }
-}
-
-static void FieldList() {
-    // FieldList = [ IdentList ":" Type ] .
-    if (sym.kind == identifierSym) {
+    static void VarDecl() {
+        // VarDecl = IdentList ":" Type .
         IdentList();
         accept(colonSym, ": expected");
         Type();
     }
-}
 
-static void SetType() {
-    // SetType = "SET" "OF" SimpleType .
-    accept(setSym, "SET expected");
-    accept(ofSym, "OF expected");
-    SimpleType();
-}
+    static void Type() {
+        // Type = SimpleType | ArrayType | RecordType | SetType | PointerType .
+        IntSet typeStarts = new IntSet(simpleTypeFirst, arraySym, recordSym, setSym, pointerSym);
+        accept(typeStarts, "type expected");
 
-static void PointerType() {
-    // PointerType = "POINTER" "TO" Type .
-    accept(pointerSym, "POINTER expected");
-    accept(toSym, "TO expected");
-    Type();
-}
-     
+        switch (sym.kind) {
+            case identifierSym:
+            case leftParenSym:
+            case leftBracketSym:
+                SimpleType();
+                break;
+            case arraySym:
+                ArrayType();
+                break;
+            case recordSym:
+                RecordType();
+                break;
+            case setSym:
+                SetType();
+                break;
+            case pointerSym:
+                PointerType();
+                break;
+            default:
+                abort("invalid type");
+        }
+    }
+
+    static void SimpleType() {
+        // SimpleType = QualIdent [ Subrange ] | Enumeration | Subrange .
+        if (sym.kind == leftParenSym) {
+            Enumeration();
+        } else if (sym.kind == leftBracketSym) {
+            Subrange();
+        } else {
+            QualIdent();
+            if (sym.kind == leftBracketSym) {
+                Subrange();
+            }
+        }
+    }
+
+    static void QualIdent() {
+        // QualIdent = identifier { "." identifier } .
+        accept(identifierSym, "identifier expected");
+        while (sym.kind == dotSym) {
+            getSym();
+            accept(identifierSym, "identifier expected");
+        }
+    }
+
+    static void Subrange() {
+        // Subrange = "[" Constant ".." Constant "]" .
+        accept(leftBracketSym, "[ expected");
+        Constant();
+        accept(equalsSym, ".. expected"); // Note: Using equalsSym for ".." in this grammar
+        Constant();
+        accept(rightBracketSym, "] expected");
+    }
+
+    static void Constant() {
+        // Constant = number | identifier .
+        if (sym.kind == numberSym) {
+            getSym();
+        } else if (sym.kind == identifierSym) {
+            getSym();
+        } else {
+            abort("number or identifier expected");
+        }
+    }
+
+    static void Enumeration() {
+        // Enumeration = "(" IdentList ")" .
+        accept(leftParenSym, "( expected");
+        IdentList();
+        accept(rightParenSym, ") expected");
+    }
+
+    static void IdentList() {
+        // IdentList = identifier { "," identifier } .
+        accept(identifierSym, "identifier expected");
+        while (sym.kind == commaSym) {
+            getSym();
+            accept(identifierSym, "identifier expected");
+        }
+    }
+
+    static void ArrayType() {
+        // ArrayType = "ARRAY" SimpleType { "," SimpleType } "OF" Type.
+        accept(arraySym, "ARRAY expected");
+        SimpleType();
+        while (sym.kind == commaSym) {
+            getSym();
+            SimpleType();
+        }
+        accept(ofSym, "OF expected");
+        Type();
+    }
+
+    static void RecordType() {
+        // RecordType = "RECORD" FieldLists "END" .
+        accept(recordSym, "RECORD expected");
+        FieldLists();
+        accept(endSym, "END expected");
+    }
+
+    static void FieldLists() {
+        // FieldLists = FieldList { ";" FieldList } .
+        FieldList();
+        while (sym.kind == semicolonSym) {
+            getSym();
+            FieldList();
+        }
+    }
+
+    static void FieldList() {
+        // FieldList = [ IdentList ":" Type ] .
+        if (sym.kind == identifierSym) {
+            IdentList();
+            accept(colonSym, ": expected");
+            Type();
+        }
+    }
+
+    static void SetType() {
+        // SetType = "SET" "OF" SimpleType .
+        accept(setSym, "SET expected");
+        accept(ofSym, "OF expected");
+        SimpleType();
+    }
+
+    static void PointerType() {
+        // PointerType = "POINTER" "TO" Type .
+        accept(pointerSym, "POINTER expected");
+        accept(toSym, "TO expected");
+        Type();
+    }
+
     // +++++++++++++++++++++ Main driver function +++++++++++++++++++++++++++++++
 
     public static void main(String[] args) {
@@ -466,23 +458,23 @@ static void PointerType() {
 
         // To test the scanner we can use a loop like the following:
 
-        do {
-            getSym(); // Lookahead symbol
-            OutFile.StdOut.write(sym.kind, 3);
-            OutFile.StdOut.writeLine(" " + sym.val);
-        } while (sym.kind != EOFSym); 
+        // do {
+        // getSym(); // Lookahead symbol
+        // OutFile.StdOut.write(sym.kind, 3);
+        // OutFile.StdOut.writeLine(" " + sym.val);
+        // } while (sym.kind != EOFSym);
 
-   	
+        getSym(); // Lookahead symbol
+        Mod2Decl(); // Start to parse from the goal symbol
+        // if we get back here everything must have been satisfactory
+        System.out.println("Parsed correctly");
 
         /*
          * After the scanner is debugged, comment out lines 127 to 131 and uncomment
          * lines 135 to 138.
          * In other words, replace the code immediately above with this code:
          * 
-         * getSym(); // Lookahead symbol
-         * Mod2Decl(); // Start to parse from the goal symbol
-         * // if we get back here everything must have been satisfactory
-         * System.out.println("Parsed correctly");
+         * 
          */
         output.close();
     } // main
