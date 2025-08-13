@@ -75,7 +75,7 @@ class Mod2decl4 {
     static char ch; // look ahead character for scanner
 
     static void getChar() {
-        // Obtains next character ch from input, or CHR(0) if EOF reached
+        // obtains next character ch from input, or CHR(0) if EOF reached
         // Reflect ch to output
         if (atEndOfFile)
             ch = EOF;
@@ -245,8 +245,6 @@ class Mod2decl4 {
     } // getSym
 
     // +++++++++++++++++++++++++++++++ Parser +++++++++++++++++++++++++++++++++++
-
-    // Add these methods to your Mod2decl2 class, after the scanner methods
 
     // Utility methods for error handling
     static void accept(int wantedSym, String errorMessage) {
