@@ -6,17 +6,6 @@
 import java.util.*;
 import library.*;
 
-class Token {
-    public int kind;
-    public String val;
-
-    public Token(int kind, String val) {
-        this.kind = kind;
-        this.val = val;
-    }
-
-} // Token
-
 class Mod2decl2 {
 
     // +++++++++++++++++++++++++ File Handling and Error handlers
@@ -307,3 +296,14 @@ class Mod2decl2 {
     } // main
 
 } // Mod2decl1
+
+class Token {
+    public int kind;
+    public String val;
+
+    public Token(int kind, String val) {
+        this.kind = kind;
+        this.val = val;
+    }
+
+} // Token
