@@ -15,7 +15,7 @@ class Mod2decl2 {
     static OutFile output;
 
     static String newFileName(String oldFileName, String ext) {
-        // Creates new file name by changing extension of oldFileName to ext
+        // creates new file name by changing extension of oldFileName to ext
         int i = oldFileName.lastIndexOf('.');
         if (i < 0)
             return oldFileName + ext;
@@ -24,7 +24,7 @@ class Mod2decl2 {
     }
 
     static void reportError(String errorMessage) {
-        // Displays errorMessage on standard output and on reflected output
+        // displays errorMessage on standard output and on reflected output
         System.out.println(errorMessage);
         output.writeLine(errorMessage);
     }
